@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds" debug="true">
+
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook">
+        <Delay>6000</Delay>
+    </shutdownHook>
+
+    <!-- Timestamp used into the Log Stream Name -->
+    <timestamp key="date" datePattern="yyyyMMdd"/>
+    <property name="LOG_HOME" value="/tmp/bep/logs" />
+    <property name="MAX_HISTORY" value="10" />
+    <property name="TOTAL_SIZE_CAP" value="10GB" />
+    <property name="MAX_FILE_SIZE" value="1000MB" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+        <encoder>
+            <!--<pattern>%d{HH:mm:ss.SSS} [%level] [%thread] [%logger{5}] - %msg%n</pattern>-->
+            <pattern>STDOUT [%level] [%logger{5}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ERROR-FILE-AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+
+        <file>${LOG_HOME}/errors/bep-error.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%logger{5}] - %msg%n</Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_HOME}/errors/bep-error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="FILE-AUDIT"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/bep.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] - %msg%n</Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_HOME}/bep.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each file should be at most ${MAX_FILE_SIZE}, keep 30 days worth of history, but at most 20GB -->
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+
+    <appender name="PSP-AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/psp/psp-msg.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] - %msg%n</Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_HOME}/psp/psp-msg.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each file should be at most ${MAX_FILE_SIZE}, keep 30 days worth of history, but at most 20GB -->
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+
+    <appender name="PSP-XML-AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/psp-xml/psp-xml-msg.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] - %msg%n</Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_HOME}/psp-xml/psp-xml-msg.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each file should be at most ${MAX_FILE_SIZE}, keep 30 days worth of history, but at most 20GB -->
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+
+    <appender name="ASYNC1000X" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>10000000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="PSP-AUDIT" />
+    </appender>
+
+
+    <appender name="PSP-XML-ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1000000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="PSP-XML-AUDIT" />
+    </appender>
+
+
+
+    <logger name="com.comcast.tsg.rtdp.bep.pspLog" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC1000X" />
+    </logger>
+
+    <logger name="com.comcast.tsg.rtdp.bep.xmlPspLog" level="DEBUG" additivity="false">
+        <appender-ref ref="PSP-XML-ASYNC" />
+    </logger>
+
+
+    <!-- PSP Notification Audit -->
+    <appender name="PSP-NOTIFICATION-AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/psp-notification/psp-raw-msg.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] - %msg%n</Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_HOME}/psp-notification/psp-raw-msg.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each file should be at most ${MAX_FILE_SIZE}, keep 30 days worth of history, but at most 20GB -->
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+
+    </appender>
+
+    <logger name="com.comcast.tsg.rtdp.bep.rawPspLog" level="INFO" additivity="false">
+        <appender-ref ref="PSP-NOTIFICATION-AUDIT" />
+    </logger>
+
+
+    <!--<logger name="com.comcast.tsg.rdp.bep.BepApplication" level="DEBUG" additivity="false">-->
+        <!--<appender-ref ref="STDOUT" />-->
+    <!--</logger>-->
+
+    <!--<logger name="com.comcast.tsg.rdp.bep.service.MasterControlProgram" level="DEBUG" additivity="false">-->
+        <!--<appender-ref ref="STDOUT" />-->
+    <!--</logger>-->
+
+
+    <!--<logger name="com.comcast.opsp" level="DEBUG" additivity="false">-->
+        <!--<appender-ref ref="STDOUT" />-->
+    <!--</logger>-->
+
+    <!--<logger name="com.comcast.tsg.rdp.bep.service.impl.EventMessageListenerImpl" level="DEBUG" additivity="false">-->
+        <!--<appender-ref ref="STDOUT" />-->
+
+    <!--</logger>-->
+
+    <logger name="com.amazonaws.services.dynamodbv2" level="DEBUG" additivity="false">
+        <appender-ref ref="FILE-AUDIT" />
+    </logger>
+
+    <logger name="com.comcast.tsg.xbo.dao" level="DEBUG" additivity="false">
+        <appender-ref ref="FILE-AUDIT" />
+    </logger>
+
+    <root level="DEBUG">
+        <appender-ref ref="FILE-AUDIT" />
+        <appender-ref ref="ERROR-FILE-AUDIT" />
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>
+

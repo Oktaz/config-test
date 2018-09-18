@@ -1,0 +1,75 @@
+server:
+  port: 8080
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+management:
+  security:
+    enabled: false
+security:
+  basic:
+    enabled: false
+psp:
+  pub:
+    name: "psp_bepsvc"
+    url: "https://opsp-pub-int.g1.app.cloud.net"
+    topic: "topic_csg_odu_adu_asn_bepsvc_qa"
+  poll:
+    coreThreadPoolSize: 3
+    maxThreadPoolSize: 3
+    maxThreads: 1
+    maxShutdownWait: 10000
+    app:
+      name: "psp_bepsvc"
+      subscription: "sub_csg_odu_adu_asn_bepsvc_qa"
+      url: "https://opsp-sub-int.g1.app.cloud.net"
+      threads: 1
+      batch: 10
+      timeout: 23000
+    oauth:
+      url: "https://websec-int.com/as/token.oauth2"
+      secretKey: "psp.poll.oauth.secret"
+bdt:
+  aws:
+    secrets:
+      endpoint: "secretsmanager.us-east-1.amazonaws.com"
+      region: "us-east-1"
+      secretName: "bep-consumer-service_qa"
+    sns:
+      key: "AKIAJKXQOA"
+      secretKey: "bdt.aws.sns.secret"
+      region: "us-east-1"
+      account:
+        arn: "arn:aws:sns:us-east-1:27842:rtdp-acc-event-qa"
+      device:
+        arn: "arn:aws:sns:us-east-1:27842:rtdp-dev-event-qa"
+rtdp:
+  dao:
+    aws:
+      key: "AKIAI2PCZTSFHPE3ZECQ"
+      secretKey: "rtdp.dao.aws.secret"
+      region: "us-east-1"
+    bep:
+      account: "BepAccount_QA"
+      buffer:
+        maxSize: 100
+        scheduleDelay: 300000
+        scheduleRate: 300000
+metrics:
+  cloudwatch:
+    enabled: false
+    namespace: bep-consumer
+    region: "us-east-1"
+    instance: qa
+    period: 60
+  logging:
+    enabled: true
+    period: 60
+swagger:
+  title: "BEP Consumer Service"
+  description: "QA Environment"
+  contactName: "Michael Zatko [BDT-DATA]"
+  contactUrl: "https://github.comcast.com/BDT/bep-consumer-service"
+  contactEmail: "BDT-DATA@comcast.com"
+logging:
+  config: config/logback.xml
